@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Python Subway Quiz - Game Pembelajaran Informatika Kelas 10</title>
+  <meta name="description" content="Game edukasi interaktif ala Subway Surfers untuk pembelajaran teori dasar Python Kelas 10 SMA/MA. Ramah Smartboard dan Laptop.">
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti CDN for standalone celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Smooth animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-pop {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-400 selection:text-slate-950">
+
+  <!-- ================= TOP NAVBAR ================= -->
+  <header class="w-full bg-slate-900/95 border-b border-slate-800 px-3 md:px-6 py-2.5 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg border border-yellow-200">
+          🐍
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-black text-white text-base md:text-lg tracking-tight">
+              PYTHON <span class="text-amber-400">SUBWAY</span>
+            </span>
+            <span class="text-[10px] uppercase font-extrabold bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1.5 py-0.5 rounded">
+              Kelas 10
+            </span>
+          </div>
+          <div class="text-[10px] text-slate-400 hidden sm:block">
+            Materi Teori Dasar Python • Smartboard & Laptop
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Tools -->
+      <div class="flex items-center gap-1.5 md:gap-2">
+        <!-- Reset Turn Button (Active during play) -->
+        <button id="btn-reset-turn" onclick="resetActiveTurn()" class="hidden px-2.5 md:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs md:text-sm font-bold border border-slate-700 active:scale-95 transition-all">
+          🔄 <span class="hidden sm:inline">Ulang Lari</span>
+        </button>
+
+        <button onclick="openCheatSheet()" class="px-2.5 md:px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-sky-300 rounded-xl text-xs md:text-sm font-bold border border-slate-700 active:scale-95 transition-all">
+          📖 <span class="hidden sm:inline">Materi Kilat</span>
+        </button>
+
+        <button onclick="openLeaderboard()" class="px-2.5 md:px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-amber-400 rounded-xl text-xs md:text-sm font-bold border border-slate-700 active:scale-95 transition-all">
+          🏆 <span class="hidden sm:inline">Peringkat</span>
+        </button>
+
+        <button id="btn-sound" onclick="toggleAudio()" class="p-2 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl border border-slate-700 active:scale-95 transition-all" title="Suara">
+          🔊
+        </button>
+
+        <button onclick="toggleFullscreen()" class="p-2 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl border border-slate-700 active:scale-95 transition-all" title="Layar Penuh Smartboard">
+          ⛶
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN APP VIEW CONTAINER ================= -->
+  <main class="flex-1 flex flex-col items-center justify-center p-2 md:p-4 max-w-5xl w-full mx-auto relative">
+
+    <!-- 1. SCREEN: MENU / START SCREEN -->
+    <div id="screen-menu" class="w-full max-w-3xl animate-pop space-y-6">
+      <!-- Hero -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs md:text-sm font-extrabold">
+          ✨ INFORMATIKA KELAS 10 SMA/MA • 1 SISWA = 1 SOAL
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-none">
+          PYTHON <span class="text-amber-400">SUBWAY QUIZ</span>
+        </h1>
+        <p class="text-xs md:text-base text-slate-300 max-w-xl mx-auto">
+          Lari di lintasan subway, kumpulkan token, dan taklukkan soal teori dasar Python (print, str, int, float, bool)!
+        </p>
+      </div>
+
+      <!-- Input Box -->
+      <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 md:p-7 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between">
+          <label class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+            👤 Masukkan Nama Siswa yang Maju:
+          </label>
+          <button type="button" onclick="toggleVirtualKeyboard()" class="px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-600 transition-all">
+            ⌨️ Papan Ketik Layar (Smartboard)
+          </button>
+        </div>
+
+        <div class="relative">
+          <input 
+            type="text" 
+            id="input-student-name" 
+            placeholder="Ketik nama siswa di sini..." 
+            autocomplete="off"
+            class="w-full h-14 md:h-16 px-4 md:px-5 bg-slate-950 border-2 border-slate-600 focus:border-amber-400 rounded-2xl text-white text-lg md:text-2xl font-bold placeholder:text-slate-500 placeholder:font-normal outline-none transition-all shadow-inner"
+          />
+        </div>
+
+        <div id="name-error" class="text-rose-400 text-xs md:text-sm font-bold hidden">
+          ⚠️ Nama siswa wajib diisi sebelum bermain!
+        </div>
+
+        <!-- Virtual Keyboard Container -->
+        <div id="virtual-keyboard-box" class="hidden pt-3 border-t border-slate-800">
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 max-w-2xl mx-auto space-y-1.5">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1">
+              Papan Ketik Layar Sentuh Smartboard
+            </div>
+            <!-- Row Numbers -->
+            <div class="grid grid-cols-10 gap-1" id="vk-nums"></div>
+            <!-- Row Q-P -->
+            <div class="grid grid-cols-10 gap-1" id="vk-row1"></div>
+            <!-- Row A-L -->
+            <div class="grid grid-cols-9 gap-1 px-3" id="vk-row2"></div>
+            <!-- Row Z-M + actions -->
+            <div class="flex gap-1" id="vk-row3"></div>
+            <!-- Row Space & Enter -->
+            <div class="flex gap-2 pt-1">
+              <button onclick="vkType(' ')" class="flex-1 h-11 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 text-white font-bold rounded-xl active:scale-95 text-sm">
+                SPASI
+              </button>
+              <button onclick="startGame()" class="px-6 h-11 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl active:scale-95 text-sm">
+                Mulai Lari ↵
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Start Button -->
+        <button 
+          type="button" 
+          onclick="startGame()"
+          class="w-full h-16 md:h-18 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 active:scale-98 text-slate-950 font-black text-xl md:text-2xl rounded-2xl shadow-xl border-2 border-yellow-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          ▶ MULAI BERLARI & KUIS
+        </button>
+      </div>
+
+      <!-- Controls Guide -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+          <div class="font-extrabold text-amber-400 mb-1">💻 Kontrol Laptop (Kibor):</div>
+          <div class="text-slate-300 space-y-0.5">
+            • <strong>Panah Kiri / Kanan</strong> : Pindah Jalur<br>
+            • <strong>Panah Atas / Spasi</strong> : Lompat Rintangan<br>
+            • <strong>Panah Bawah</strong> : Slide / Tunduk di Bawah Palang
+          </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+          <div class="font-extrabold text-sky-400 mb-1">📱 Kontrol Layar Sentuh / Smartboard:</div>
+          <div class="text-slate-300 space-y-0.5">
+            • <strong>Tombol On-Screen Besar</strong>: Tombol Kiri, Lompat, Slide, Kanan di bawah canvas.<br>
+            • <strong>Gesture Usap (Swipe)</strong>: Geser jari ke kiri/kanan/atas/bawah di layar!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SCREEN: PLAYING (CANVAS & TOUCH BUTTONS) -->
+    <div id="screen-game" class="w-full max-w-4xl hidden flex-col items-center justify-between flex-1 relative">
+      <!-- HUD -->
+      <div class="w-full bg-slate-900/90 border-2 border-slate-700/80 rounded-2xl px-3 md:px-5 py-2.5 flex items-center justify-between shadow-xl mb-2 backdrop-blur-md">
+        <div class="flex items-center gap-2">
+          <span class="p-1 rounded bg-sky-500/20 text-sky-400">👤</span>
+          <div>
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Siswa Aktif</div>
+            <div id="hud-name" class="text-sm md:text-base font-black text-amber-300">...</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="text-center">
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Jarak</div>
+            <div class="text-lg md:text-2xl font-black text-white font-mono">
+              <span id="hud-distance">0</span> <span class="text-xs text-slate-400">m</span>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div class="text-[10px] text-amber-400 uppercase font-bold">Token Python</div>
+            <div class="text-lg md:text-2xl font-black text-amber-400 font-mono">
+              🪙 <span id="hud-coins">0</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="resetActiveTurn()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold rounded-xl border border-slate-700">
+          🔄 Ulang Lari
+        </button>
+      </div>
+
+      <!-- Canvas Area -->
+      <div class="relative w-full flex-1 flex items-center justify-center min-h-[380px] md:min-h-[480px]">
+        <canvas id="subway-canvas" class="w-full h-full max-h-[520px] md:max-h-[640px] block rounded-2xl shadow-2xl bg-slate-950 cursor-pointer"></canvas>
+        
+        <!-- Countdown Overlay -->
+        <div id="countdown-overlay" class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-30 hidden pointer-events-none">
+          <div id="countdown-number" class="text-7xl md:text-9xl font-black text-amber-400 font-mono animate-bounce drop-shadow-2xl">
+            3
+          </div>
+          <p class="text-base md:text-xl font-bold text-white mt-2">
+            Siap-siap hindari rintangan & kumpulkan token!
+          </p>
+        </div>
+      </div>
+
+      <!-- Giant Touch Controls for Smartboard -->
+      <div class="w-full max-w-4xl px-2 py-2 select-none">
+        <div class="flex items-center justify-between mb-1.5 px-2">
+          <span class="text-[11px] font-bold text-amber-300 uppercase tracking-widest flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            KONTROL SENTUH SMARTBOARD & LAPTOP
+          </span>
+          <span class="text-[11px] text-slate-400">
+            (Bisa sentuh tombol di bawah atau geser/swipe layar)
+          </span>
+        </div>
+        <div class="grid grid-cols-4 gap-2 md:gap-3">
+          <button onpointerdown="triggerAction('left')" class="h-16 md:h-20 bg-gradient-to-b from-sky-600 to-sky-800 active:from-sky-400 active:to-sky-600 active:scale-95 text-white font-extrabold rounded-2xl shadow-xl border-2 border-sky-400/50 flex flex-col items-center justify-center">
+            <span class="text-2xl">⬅️</span>
+            <span class="text-xs md:text-sm font-black">KIRI</span>
+          </button>
+          <button onpointerdown="triggerAction('jump')" class="h-16 md:h-20 bg-gradient-to-b from-amber-500 to-amber-700 active:from-amber-300 active:to-amber-500 active:scale-95 text-slate-950 font-black rounded-2xl shadow-xl border-2 border-yellow-300 flex flex-col items-center justify-center">
+            <span class="text-2xl">⬆️</span>
+            <span class="text-xs md:text-sm font-black">LOMPAT</span>
+          </button>
+          <button onpointerdown="triggerAction('slide')" class="h-16 md:h-20 bg-gradient-to-b from-indigo-600 to-indigo-800 active:from-indigo-400 active:to-indigo-600 active:scale-95 text-white font-extrabold rounded-2xl shadow-xl border-2 border-indigo-400/50 flex flex-col items-center justify-center">
+            <span class="text-2xl">⬇️</span>
+            <span class="text-xs md:text-sm font-black">SLIDE</span>
+          </button>
+          <button onpointerdown="triggerAction('right')" class="h-16 md:h-20 bg-gradient-to-b from-sky-600 to-sky-800 active:from-sky-400 active:to-sky-600 active:scale-95 text-white font-extrabold rounded-2xl shadow-xl border-2 border-sky-400/50 flex flex-col items-center justify-center">
+            <span class="text-2xl">➡️</span>
+            <span class="text-xs md:text-sm font-black">KANAN</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SCREEN: QUIZ MODAL (1 SISWA = 1 SOAL) -->
+    <div id="quiz-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-950/85 backdrop-blur-md hidden animate-pop">
+      <div class="relative w-full max-w-3xl bg-slate-900 border-4 border-amber-400 rounded-3xl shadow-2xl p-4 md:p-8 text-white max-h-[92vh] overflow-y-auto">
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-700">
+          <div>
+            <div class="text-[11px] md:text-xs font-bold text-amber-400 uppercase tracking-widest">
+              TANTANGAN SUBWAY SURFERS: 1 SISWA = 1 SOAL
+            </div>
+            <h2 class="text-xl md:text-2xl font-black text-white">
+              Kuis Kilat Teori Python
+            </h2>
+          </div>
+          <div class="bg-slate-800 px-3.5 py-1.5 rounded-full border border-sky-400/40 text-xs md:text-sm font-bold text-slate-200">
+            Siswa: <span id="quiz-student-name" class="text-amber-300 font-black">...</span>
+          </div>
+        </div>
+
+        <!-- Topic & Stats -->
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <span id="quiz-topic-badge" class="px-3 py-1 rounded-lg text-xs md:text-sm font-extrabold bg-sky-500/20 text-sky-300 border border-sky-500/40">
+            Materi: ...
+          </span>
+          <div class="text-xs md:text-sm text-slate-300 font-medium">
+            🏃 Jarak: <strong id="quiz-stat-distance" class="text-white">0m</strong> • 🪙 Koin: <strong id="quiz-stat-coins" class="text-amber-400">0</strong>
+          </div>
+        </div>
+
+        <!-- Question -->
+        <div class="mb-4">
+          <h3 id="quiz-question-text" class="text-lg md:text-2xl font-bold text-slate-100 leading-snug">
+            Pertanyaan...
+          </h3>
+          <div id="quiz-code-box" class="mt-3 p-3 rounded-xl bg-slate-950 border border-slate-700 font-mono text-sm text-emerald-400 hidden">
+            <pre id="quiz-code-text"></pre>
+          </div>
+        </div>
+
+        <!-- Options Container (A, B, C, D) -->
+        <div id="quiz-options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Explanation & Next Button (Hidden until answered) -->
+        <div id="quiz-result-area" class="space-y-4 hidden animate-pop">
+          <div id="quiz-banner" class="p-4 rounded-2xl border-2 flex items-start gap-3">
+            <span id="quiz-banner-icon" class="text-2xl"></span>
+            <div>
+              <div id="quiz-banner-title" class="font-extrabold text-base md:text-lg"></div>
+              <p id="quiz-explanation-text" class="text-xs md:text-sm text-slate-200 mt-1"></p>
+            </div>
+          </div>
+
+          <!-- Score Breakdown -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-700 flex items-center justify-between">
+            <div class="text-xs md:text-sm text-slate-300 space-y-0.5">
+              <div>Lari: <strong id="breakdown-distance" class="text-white">0</strong></div>
+              <div>Token: <strong id="breakdown-coins" class="text-amber-400">0</strong></div>
+              <div>Kuis: <strong id="breakdown-quiz" class="text-emerald-400">0</strong></div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-amber-300 uppercase tracking-widest block font-bold">TOTAL SKOR</span>
+              <span id="breakdown-total" class="text-3xl font-black text-amber-400">0</span>
+            </div>
+          </div>
+
+          <button onclick="finishQuizRound()" class="w-full h-14 md:h-16 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 text-slate-950 font-black rounded-2xl text-base md:text-xl shadow-xl flex items-center justify-center gap-2 active:scale-98">
+            Simpan Skor & Giliran Siswa Berikutnya ➜
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SCREEN: LEADERBOARD -->
+    <div id="screen-leaderboard" class="w-full max-w-4xl hidden animate-pop space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <div class="flex items-center gap-3">
+          <button onclick="backToMenu()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-2xl border border-slate-700">
+            ⬅ Kembali
+          </button>
+          <h2 class="text-2xl md:text-3xl font-black text-white">
+            🏆 Papan Peringkat Kelas 10
+          </h2>
+        </div>
+        <button onclick="confirmClearLeaderboard()" class="px-3 py-2 bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs md:text-sm font-semibold rounded-xl border border-rose-800">
+          🗑 Hapus Riwayat
+        </button>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm md:text-base">
+            <thead class="bg-slate-950 text-slate-400 text-xs uppercase border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4 text-center w-16">Rank</th>
+                <th class="py-3 px-4">Nama Siswa</th>
+                <th class="py-3 px-4 text-center">Kuis</th>
+                <th class="py-3 px-4 text-center">Jarak</th>
+                <th class="py-3 px-4 text-center">Token</th>
+                <th class="py-3 px-4 text-right">Total Skor</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody" class="divide-y divide-slate-800">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <button onclick="backToMenu()" class="w-full h-14 md:h-16 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-lg md:text-xl rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-98">
+        Panggil Siswa Berikutnya & Main Lagi ➜
+      </button>
+    </div>
+
+    <!-- 5. CHEAT SHEET MODAL -->
+    <div id="cheatsheet-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-950/85 backdrop-blur-md hidden animate-pop">
+      <div class="relative w-full max-w-2xl bg-slate-900 border-2 border-sky-400 rounded-3xl p-5 md:p-7 text-white max-h-[90vh] overflow-y-auto space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-700">
+          <h2 class="text-xl md:text-2xl font-black text-white">📖 Cheat Sheet Teori Dasar Python</h2>
+          <button onclick="closeCheatSheet()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300">✕</button>
+        </div>
+        <div class="space-y-3 text-xs md:text-sm text-slate-300">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <strong class="text-amber-400">1. Fungsi print():</strong> Digunakan untuk menampilkan output ke layar konsol. Contoh: <code class="text-emerald-400 font-mono">print("Halo!")</code>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-950 p-3 rounded-xl border border-sky-500/30">
+              <strong class="text-sky-400">str (String)</strong><br>Teks diapit tanda kutip.<br><code class="text-amber-300 font-mono">nama = "Budi"</code>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-emerald-500/30">
+              <strong class="text-emerald-400">int (Integer)</strong><br>Bilangan bulat tanpa desimal.<br><code class="text-emerald-300 font-mono">umur = 16</code>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-purple-500/30">
+              <strong class="text-purple-400">float</strong><br>Bilangan pecahan desimal titik.<br><code class="text-purple-300 font-mono">tinggi = 1.68</code>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/30">
+              <strong class="text-amber-400">bool (Boolean)</strong><br>Hanya True atau False.<br><code class="text-amber-300 font-mono">aktif = True</code>
+            </div>
+          </div>
+        </div>
+        <button onclick="closeCheatSheet()" class="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-xl">
+          Tutup & Siap Berlari
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= JAVASCRIPT GAME ENGINE ================= -->
+  <script>
+    // 1. Audio Synthesizer (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let isMuted = false;
+
+    function playTone(freq, type, duration, rampFreq) {
+      if (isMuted) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        if (rampFreq) osc.frequency.exponentialRampToValueAtTime(rampFreq, audioCtx.currentTime + duration);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundJump() { playTone(180, 'sine', 0.18, 480); }
+    function soundSlide() { playTone(240, 'triangle', 0.2, 90); }
+    function soundSwitch() { playTone(300, 'sine', 0.08, 220); }
+    function soundCoin() { playTone(987, 'sine', 0.2, 1318); }
+    function soundHit() { playTone(120, 'sawtooth', 0.35, 30); }
+    function soundCorrect() { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.25), i * 80)); }
+    function soundWrong() { playTone(140, 'sawtooth', 0.4, 110); }
+
+    function toggleAudio() {
+      isMuted = !isMuted;
+      document.getElementById('btn-sound').innerText = isMuted ? '🔇' : '🔊';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // 2. Question Bank (Materi Teori Dasar Python Kelas 10)
+    const QUESTIONS = [
+      {
+        topic: 'Dasar Pemrograman',
+        q: 'Apa pengertian dari "Coding" atau pemrograman yang paling tepat untuk pemula?',
+        options: ['Menulis serangkaian instruksi agar komputer menjalankan tugas', 'Memperbaiki kabel dan perangkat keras komputer yang rusak', 'Mendesain poster di Photoshop', 'Menghapus virus di flashdisk'],
+        correct: 0,
+        exp: 'Coding adalah proses menulis instruksi dalam bahasa pemrograman (seperti Python) agar komputer dapat mengeksekusi perintah kita.'
+      },
+      {
+        topic: 'Fungsi print()',
+        q: 'Apa fungsi utama dari perintah print() dalam bahasa Python?',
+        options: ['Menampilkan teks atau output ke layar monitor', 'Mencetak dokumen ke mesin printer fisik di kertas', 'Menyimpan file secara otomatis', 'Mematikan monitor komputer'],
+        correct: 0,
+        exp: 'Fungsi print() bertugas menampilkan hasil teks, variabel, atau angka ke layar konsol.'
+      },
+      {
+        topic: 'Sintaks print()',
+        q: 'Manakah penulisan perintah print() yang BENAR untuk menampilkan teks "Halo"?',
+        options: ['print("Halo")', 'Print("Halo")', 'print Halo', 'cetak("Halo")'],
+        correct: 0,
+        exp: 'Python case-sensitive, jadi harus huruf kecil print() dan teks dibungkus tanda kutip.'
+      },
+      {
+        topic: 'Tipe Data str',
+        q: 'Apa ciri khas utama dari tipe data "str" (String) dalam bahasa Python?',
+        options: ['Kumpulan teks yang selalu diapit tanda kutip ("..." atau \'...\')', 'Bilangan bulat tanpa koma', 'Nilai kebenaran Benar atau Salah', 'Angka desimal berkoma'],
+        correct: 0,
+        exp: 'String (str) digunakan untuk teks dan harus selalu diapit tanda petik, contoh: "Informatika".'
+      },
+      {
+        topic: 'Tipe Data int',
+        q: 'Manakah contoh nilai yang bertipe data "int" (Integer)?',
+        options: ['25', '"25"', '25.0', 'True'],
+        correct: 0,
+        exp: 'Integer (int) adalah bilangan bulat tanpa tanda kutip dan tanpa tanda desimal.'
+      },
+      {
+        topic: 'Tipe Data float',
+        q: 'Dalam Python, bagaimanakah penulisan bilangan desimal tiga koma empat belas (3,14)?',
+        options: ['3.14 (menggunakan tanda titik)', '3,14 (menggunakan koma)', '"3.14"', '3/14'],
+        correct: 0,
+        exp: 'Pemisah desimal di Python menggunakan tanda titik (.): 3.14.'
+      },
+      {
+        topic: 'Tipe Data bool',
+        q: 'Tipe data "bool" (Boolean) hanya memiliki DUA nilai. Nilai apakah itu?',
+        options: ['True dan False (huruf pertama kapital)', 'true dan false (huruf kecil)', 'Yes dan No', '1 dan 0'],
+        correct: 0,
+        exp: 'Boolean di Python memiliki dua nilai kebenaran: True dan False (diawali huruf besar).'
+      },
+      {
+        topic: 'Output print()',
+        q: 'Perhatikan kode Python: print(5 + 3). Apa output yang tampil di layar?',
+        code: 'print(5 + 3)',
+        options: ['8', '5 + 3', '53', 'Error'],
+        correct: 0,
+        exp: 'Karena tidak diapit tanda kutip, Python menghitung operasinya sehingga menghasilkan angka 8.'
+      },
+      {
+        topic: 'Komentar Python',
+        q: 'Simbol apa yang digunakan untuk membuat komentar/catatan di Python yang tidak dijalankan komputer?',
+        options: ['Tanda Pagar (#)', 'Tanda Titik Dua (:)', 'Tanda Garis Miring Ganda (//)', 'Tanda Asterisk (*)'],
+        correct: 0,
+        exp: 'Tanda pagar (#) digunakan untuk menulis komentar di Python.'
+      }
+    ];
+
+    // 3. Game State
+    let currentStudent = '';
+    let currentDistance = 0;
+    let currentCoins = 0;
+    let isPlaying = false;
+    let isPaused = false;
+    let currentQuestion = null;
+    let activeRoundScore = 0;
+
+    // Leaderboard in localStorage
+    const STORAGE_KEY = 'python_subway_leaderboard_v1';
+    function getLeaderboard() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveLeaderboard(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    // 4. Virtual Keyboard Generation
+    function initVirtualKeyboard() {
+      const nums = ['1','2','3','4','5','6','7','8','9','0'];
+      const r1 = ['Q','W','E','R','T','Y','U','I','O','P'];
+      const r2 = ['A','S','D','F','G','H','J','K','L'];
+      const r3 = ['Z','X','C','V','B','N','M','-','.'];
+
+      const renderRow = (arr, elId) => {
+        const el = document.getElementById(elId);
+        el.innerHTML = '';
+        arr.forEach(c => {
+          const btn = document.createElement('button');
+          btn.className = 'h-10 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 text-white font-bold rounded-lg text-sm transition-all active:scale-95';
+          btn.innerText = c;
+          btn.onclick = () => vkType(c);
+          el.appendChild(btn);
+        });
+      };
+
+      renderRow(nums, 'vk-nums');
+      renderRow(r1, 'vk-row1');
+      renderRow(r2, 'vk-row2');
+
+      const r3El = document.getElementById('vk-row3');
+      r3El.innerHTML = '';
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'px-2 h-10 bg-rose-950 text-rose-200 text-xs font-bold rounded-lg';
+      clearBtn.innerText = 'Hapus Semua';
+      clearBtn.onclick = () => { document.getElementById('input-student-name').value = ''; };
+      r3El.appendChild(clearBtn);
+
+      r3.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'flex-1 h-10 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 text-white font-bold rounded-lg text-sm';
+        btn.innerText = c;
+        btn.onclick = () => vkType(c);
+        r3El.appendChild(btn);
+      });
+
+      const bspBtn = document.createElement('button');
+      bspBtn.className = 'px-3 h-10 bg-slate-700 hover:bg-amber-500 text-white font-bold rounded-lg';
+      bspBtn.innerText = '⌫';
+      bspBtn.onclick = () => {
+        const inp = document.getElementById('input-student-name');
+        inp.value = inp.value.slice(0, -1);
+      };
+      r3El.appendChild(bspBtn);
+    }
+
+    function vkType(char) {
+      const inp = document.getElementById('input-student-name');
+      inp.value += char;
+      document.getElementById('name-error').classList.add('hidden');
+    }
+
+    function toggleVirtualKeyboard() {
+      const el = document.getElementById('virtual-keyboard-box');
+      el.classList.toggle('hidden');
+    }
+
+    // 5. Canvas 2D Subway Surfers Engine
+    const canvas = document.getElementById('subway-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let runner = { lane: 1, targetLane: 1, laneX: 0, y: 0, vy: 0, isJumping: false, isSliding: false, slideTimer: 0, runFrame: 0 };
+    let obstacles = [];
+    let coins = [];
+    let speed = 7.5;
+    let trackOffset = 0;
+    let shakeTimer = 0;
+    let stumble = false;
+
+    function triggerAction(act) {
+      if (!isPlaying || isPaused || stumble) return;
+      if (act === 'left') {
+        if (runner.targetLane > 0) { runner.targetLane--; soundSwitch(); }
+      } else if (act === 'right') {
+        if (runner.targetLane < 2) { runner.targetLane++; soundSwitch(); }
+      } else if (act === 'jump') {
+        if (!runner.isJumping) { runner.isJumping = true; runner.vy = 14; soundJump(); }
+      } else if (act === 'slide') {
+        if (runner.isJumping) runner.vy = -18;
+        runner.isSliding = true;
+        runner.slideTimer = 35;
+        soundSlide();
+      }
+    }
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+      if (!isPlaying || isPaused) return;
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') triggerAction('left');
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') triggerAction('right');
+      if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w' || e.key === ' ') triggerAction('jump');
+      if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') triggerAction('slide');
+    });
+
+    // Touch Swipe Detection on Canvas
+    let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', (e) => {
+      if (!isPlaying || isPaused) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      const dt = Date.now() - touchStartTime;
+      if (dt < 500 && (Math.abs(dx) > 30 || Math.abs(dy) > 30)) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 0) triggerAction('right'); else triggerAction('left');
+        } else {
+          if (dy < 0) triggerAction('jump'); else triggerAction('slide');
+        }
+      }
+    }, { passive: true });
+
+    function resetGameTrack() {
+      runner = { lane: 1, targetLane: 1, laneX: 0, y: 0, vy: 0, isJumping: false, isSliding: false, slideTimer: 0, runFrame: 0 };
+      obstacles = [];
+      coins = [];
+      speed = 7.5;
+      trackOffset = 0;
+      shakeTimer = 0;
+      stumble = false;
+      currentDistance = 0;
+      currentCoins = 0;
+
+      for (let z = 300; z < 1500; z += 180) {
+        const lane = Math.floor(Math.random() * 3);
+        const types = ['barrier', 'cone', 'train'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        obstacles.push({ lane, z, type, canDuck: type === 'barrier', canJump: type === 'cone' || type === 'barrier' });
+
+        const otherLane = (lane + 1) % 3;
+        for (let cz = z - 50; cz <= z + 50; cz += 25) {
+          coins.push({ lane: otherLane, z: cz, collected: false });
+        }
+      }
+    }
+
+    function renderGameLoop() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+        canvas.width = Math.floor(rect.width * dpr);
+        canvas.height = Math.floor(rect.height * dpr);
+      }
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+
+      if (shakeTimer > 0) {
+        shakeTimer--;
+        ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12);
+      }
+
+      // Update
+      if (isPlaying && !isPaused && !stumble) {
+        currentDistance += speed * 0.12;
+        trackOffset = (trackOffset + speed) % 80;
+        speed = Math.min(13, 7.5 + currentDistance * 0.0035);
+
+        const targetX = runner.targetLane - 1;
+        runner.laneX += (targetX - runner.laneX) * 0.22;
+
+        if (runner.isJumping) {
+          runner.y += runner.vy;
+          runner.vy -= 0.85;
+          if (runner.y <= 0) { runner.y = 0; runner.vy = 0; runner.isJumping = false; }
+        }
+        if (runner.isSliding) {
+          runner.slideTimer--;
+          if (runner.slideTimer <= 0) runner.isSliding = false;
+        }
+        runner.runFrame += 0.25;
+
+        // Move items
+        obstacles.forEach(o => o.z -= speed);
+        coins.forEach(c => c.z -= speed);
+
+        // Spawn
+        const maxZ = Math.max(0, ...obstacles.map(o => o.z));
+        if (maxZ < 1400) {
+          const spawnZ = Math.max(1400, maxZ + 190);
+          const lane = Math.floor(Math.random() * 3);
+          const types = ['barrier', 'cone', 'train'];
+          const type = types[Math.floor(Math.random() * types.length)];
+          obstacles.push({ lane, z: spawnZ, type, canDuck: type === 'barrier', canJump: type === 'cone' || type === 'barrier' });
+          const coinLane = (lane + 1) % 3;
+          for (let cz = spawnZ - 50; cz <= spawnZ + 50; cz += 25) {
+            coins.push({ lane: coinLane, z: cz, collected: false });
+          }
+        }
+
+        obstacles = obstacles.filter(o => o.z > -100);
+        coins = coins.filter(c => c.z > -100);
+
+        // Coins
+        coins.forEach(c => {
+          if (!c.collected && c.z > 20 && c.z < 85) {
+            if (Math.abs(c.lane - (runner.laneX + 1)) < 0.45 && runner.y < 70) {
+              c.collected = true;
+              currentCoins++;
+              soundCoin();
+            }
+          }
+        });
+
+        // Obstacles collision
+        for (const obs of obstacles) {
+          if (obs.z > 25 && obs.z < 75) {
+            if (Math.abs(obs.lane - (runner.laneX + 1)) < 0.5) {
+              let hit = true;
+              if (obs.canJump && runner.y > 40) hit = false;
+              if (obs.canDuck && runner.isSliding) hit = false;
+              if (hit) {
+                stumble = true;
+                shakeTimer = 18;
+                soundHit();
+                setTimeout(() => { triggerQuizModal(); }, 400);
+                break;
+              }
+            }
+          }
+        }
+
+        // Auto trigger at 300m
+        if (currentDistance >= 320 && !stumble) {
+          stumble = true;
+          triggerQuizModal();
+        }
+
+        document.getElementById('hud-distance').innerText = Math.floor(currentDistance);
+        document.getElementById('hud-coins').innerText = currentCoins;
+      }
+
+      // DRAWING
+      const horizonY = H * 0.28;
+      const vpX = W / 2;
+
+      // Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+      skyGrad.addColorStop(0, '#0f172a');
+      skyGrad.addColorStop(0.45, '#0284c7');
+      skyGrad.addColorStop(1, '#090d16');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Track Perspective
+      const trackTopW = W * 0.18;
+      const trackBottomW = W * 0.88;
+
+      const project = (laneNorm, z) => {
+        const depth = Math.max(0.01, 1 - z / 1200);
+        const tw = trackTopW + (trackBottomW - trackTopW) * Math.pow(depth, 1.4);
+        const y = horizonY + (H - horizonY) * Math.pow(depth, 1.4);
+        const x = vpX + (laneNorm * (tw / 2));
+        return { x, y, scale: depth };
+      };
+
+      // Ground
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.moveTo(vpX - trackTopW / 2, horizonY);
+      ctx.lineTo(vpX + trackTopW / 2, horizonY);
+      ctx.lineTo(vpX + trackBottomW / 2, H);
+      ctx.lineTo(vpX - trackBottomW / 2, H);
+      ctx.fill();
+
+      // Railway ties
+      for (let z = 1200; z >= 0; z -= 35) {
+        const pL = project(-1, (z - trackOffset + 1200) % 1200);
+        const pR = project(1, (z - trackOffset + 1200) % 1200);
+        ctx.strokeStyle = `rgba(100, 116, 139, ${pL.scale * 0.7})`;
+        ctx.lineWidth = Math.max(1, 5 * pL.scale);
+        ctx.beginPath();
+        ctx.moveTo(pL.x, pL.y);
+        ctx.lineTo(pR.x, pR.y);
+        ctx.stroke();
+      }
+
+      // Rails
+      [-1, -0.33, 0.33, 1].forEach((b, i) => {
+        const nearP = project(b, 0);
+        const farP = project(b, 1200);
+        ctx.strokeStyle = (i === 0 || i === 3) ? '#38bdf8' : '#e2e8f0';
+        ctx.lineWidth = (i === 0 || i === 3) ? 4 : 2;
+        ctx.beginPath();
+        ctx.moveTo(farP.x, farP.y);
+        ctx.lineTo(nearP.x, nearP.y);
+        ctx.stroke();
+      });
+
+      // Render items
+      const items = [
+        ...obstacles.map(o => ({ type: 'obs', z: o.z, d: o })),
+        ...coins.filter(c => !c.collected).map(c => ({ type: 'coin', z: c.z, d: c }))
+      ].sort((a, b) => b.z - a.z);
+
+      items.forEach(it => {
+        if (it.z > 1150 || it.z < -40) return;
+        const laneNorm = (it.d.lane - 1) * 0.66;
+        const pos = project(laneNorm, it.z);
+
+        if (it.type === 'coin') {
+          const cr = Math.max(3, 15 * pos.scale);
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y - 20 * pos.scale, cr, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y - 20 * pos.scale, cr * 0.65, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          const sc = pos.scale;
+          if (it.d.type === 'train') {
+            const tw = 70 * sc, th = 85 * sc;
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(pos.x - tw / 2, pos.y - th, tw, th);
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(pos.x - tw * 0.4, pos.y - th + 10 * sc, tw * 0.8, 25 * sc);
+          } else if (it.d.type === 'barrier') {
+            const bw = 60 * sc, bh = 40 * sc;
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(pos.x - bw / 2, pos.y - bh + 6 * sc, bw, 16 * sc);
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(pos.x - bw / 2, pos.y - bh, 6 * sc, bh);
+            ctx.fillRect(pos.x + bw / 2 - 6 * sc, pos.y - bh, 6 * sc, bh);
+          } else {
+            const cw = 40 * sc, ch = 35 * sc;
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.moveTo(pos.x - cw / 2, pos.y);
+            ctx.lineTo(pos.x, pos.y - ch);
+            ctx.lineTo(pos.x + cw / 2, pos.y);
+            ctx.fill();
+          }
+        }
+      });
+
+      // Character Runner
+      const rPos = project(runner.laneX * 0.66, 45);
+      const rScale = rPos.scale * 1.15;
+      const rx = rPos.x;
+      const ry = rPos.y - runner.y * rScale;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath();
+      ctx.ellipse(rPos.x, rPos.y - 2, 24 * rScale, 8 * rScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (runner.isSliding) {
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(rx - 25 * rScale, ry - 25 * rScale, 50 * rScale, 24 * rScale);
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(rx + 12 * rScale, ry - 20 * rScale, 11 * rScale, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const lp = Math.sin(runner.runFrame * 3);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 8 * rScale;
+        ctx.beginPath();
+        ctx.moveTo(rx - 6 * rScale, ry - 26 * rScale);
+        ctx.lineTo(rx - 8 * rScale, ry - 15 * rScale + lp * 8 * rScale);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(rx + 6 * rScale, ry - 26 * rScale);
+        ctx.lineTo(rx + 8 * rScale, ry - 15 * rScale - lp * 8 * rScale);
+        ctx.stroke();
+
+        // Hoodie
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(rx - 18 * rScale, ry - 55 * rScale, 36 * rScale, 32 * rScale);
+        // Backpack
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(rx - 13 * rScale, ry - 52 * rScale, 26 * rScale, 22 * rScale);
+        // Head & Cap
+        ctx.fillStyle = '#fbcfe8';
+        ctx.beginPath();
+        ctx.arc(rx, ry - 63 * rScale, 13 * rScale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(rx, ry - 65 * rScale, 14 * rScale, Math.PI, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+      requestAnimationFrame(renderGameLoop);
+    }
+
+    // 6. Game Flow Functions
+    function startGame() {
+      const inp = document.getElementById('input-student-name');
+      const name = inp.value.trim();
+      if (!name) {
+        document.getElementById('name-error').classList.remove('hidden');
+        return;
+      }
+      currentStudent = name;
+      document.getElementById('hud-name').innerText = currentStudent;
+
+      document.getElementById('screen-menu').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('btn-reset-turn').classList.remove('hidden');
+
+      resetGameTrack();
+      isPlaying = true;
+      isPaused = true;
+
+      // Countdown
+      const overlay = document.getElementById('countdown-overlay');
+      const num = document.getElementById('countdown-number');
+      overlay.classList.remove('hidden');
+      num.innerText = '3';
+      playTone(440, 'sine', 0.15);
+
+      setTimeout(() => { num.innerText = '2'; playTone(440, 'sine', 0.15); }, 800);
+      setTimeout(() => { num.innerText = '1'; playTone(440, 'sine', 0.15); }, 1600);
+      setTimeout(() => { num.innerText = 'LARI!'; playTone(880, 'sine', 0.35); }, 2400);
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        isPaused = false;
+      }, 3000);
+    }
+
+    function resetActiveTurn() {
+      if (confirm('Ulangi giliran siswa ini dari awal? (Papan peringkat tetap aman tersimpan)')) {
+        resetGameTrack();
+        isPaused = true;
+        const overlay = document.getElementById('countdown-overlay');
+        const num = document.getElementById('countdown-number');
+        overlay.classList.remove('hidden');
+        num.innerText = '3';
+        playTone(440, 'sine', 0.15);
+        setTimeout(() => { num.innerText = '2'; playTone(440, 'sine', 0.15); }, 700);
+        setTimeout(() => { num.innerText = '1'; playTone(440, 'sine', 0.15); }, 1400);
+        setTimeout(() => { num.innerText = 'LARI!'; playTone(880, 'sine', 0.35); }, 2100);
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+          isPaused = false;
+        }, 2700);
+      }
+    }
+
+    function triggerQuizModal() {
+      isPaused = true;
+      currentQuestion = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+
+      document.getElementById('quiz-student-name').innerText = currentStudent;
+      document.getElementById('quiz-topic-badge').innerText = 'Materi: ' + currentQuestion.topic;
+      document.getElementById('quiz-stat-distance').innerText = Math.floor(currentDistance) + 'm';
+      document.getElementById('quiz-stat-coins').innerText = currentCoins;
+      document.getElementById('quiz-question-text').innerText = currentQuestion.q;
+
+      const codeBox = document.getElementById('quiz-code-box');
+      if (currentQuestion.code) {
+        codeBox.classList.remove('hidden');
+        document.getElementById('quiz-code-text').innerText = currentQuestion.code;
+      } else {
+        codeBox.classList.add('hidden');
+      }
+
+      // Render options
+      const optContainer = document.getElementById('quiz-options-container');
+      optContainer.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      currentQuestion.options.forEach((optText, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'min-h-[64px] p-4 bg-slate-800 hover:bg-slate-700 text-left rounded-2xl border-2 border-slate-700 flex items-center gap-3 transition-all cursor-pointer active:scale-98';
+        btn.innerHTML = `
+          <span class="w-10 h-10 rounded-xl bg-slate-700 text-amber-300 font-black text-lg flex items-center justify-center shrink-0 border border-slate-600">${letters[i]}</span>
+          <span class="text-sm md:text-base font-semibold leading-snug">${optText}</span>
+        `;
+        btn.onclick = () => selectQuizAnswer(i);
+        optContainer.appendChild(btn);
+      });
+
+      document.getElementById('quiz-result-area').classList.add('hidden');
+      document.getElementById('quiz-modal').classList.remove('hidden');
+    }
+
+    let roundCorrect = false;
+
+    function selectQuizAnswer(index) {
+      const optButtons = document.getElementById('quiz-options-container').children;
+      for (let btn of optButtons) btn.disabled = true;
+
+      roundCorrect = index === currentQuestion.correct;
+      const banner = document.getElementById('quiz-banner');
+      const icon = document.getElementById('quiz-banner-icon');
+      const title = document.getElementById('quiz-banner-title');
+      const exp = document.getElementById('quiz-explanation-text');
+
+      if (roundCorrect) {
+        soundCorrect();
+        if (window.confetti) confetti({ particleCount: 70, spread: 60 });
+        optButtons[index].classList.add('bg-emerald-950', 'border-emerald-400', 'text-emerald-200');
+        banner.className = 'p-4 rounded-2xl border-2 bg-emerald-950/70 border-emerald-500/80 text-emerald-200 flex items-start gap-3';
+        icon.innerText = '🎉';
+        title.innerText = 'BENAR SEKALI! (+150 Poin Kuis)';
+      } else {
+        soundWrong();
+        optButtons[index].classList.add('bg-rose-950', 'border-rose-500', 'text-rose-200');
+        optButtons[currentQuestion.correct].classList.add('bg-emerald-950', 'border-emerald-400');
+        banner.className = 'p-4 rounded-2xl border-2 bg-rose-950/70 border-rose-500/80 text-rose-200 flex items-start gap-3';
+        icon.innerText = '💡';
+        title.innerText = 'Belum Tepat, Mari Kita Pelajari Bersama!';
+      }
+
+      exp.innerHTML = `<strong>Penjelasan:</strong> ${currentQuestion.exp}`;
+
+      const distPts = Math.floor(currentDistance) * 2;
+      const coinPts = currentCoins * 15;
+      const quizPts = roundCorrect ? 150 : 0;
+      activeRoundScore = distPts + coinPts + quizPts;
+
+      document.getElementById('breakdown-distance').innerText = `${Math.floor(currentDistance)}m × 2 = +${distPts}`;
+      document.getElementById('breakdown-coins').innerText = `${currentCoins} × 15 = +${coinPts}`;
+      document.getElementById('breakdown-quiz').innerText = `+${quizPts}`;
+      document.getElementById('breakdown-total').innerText = activeRoundScore;
+
+      document.getElementById('quiz-result-area').classList.remove('hidden');
+    }
+
+    function finishQuizRound() {
+      // Save entry to leaderboard
+      const entry = {
+        name: currentStudent,
+        score: activeRoundScore,
+        distance: Math.floor(currentDistance),
+        coins: currentCoins,
+        correct: roundCorrect,
+        topic: currentQuestion.topic,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const lb = getLeaderboard();
+      lb.unshift(entry);
+      saveLeaderboard(lb);
+
+      document.getElementById('quiz-modal').classList.add('hidden');
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('btn-reset-turn').classList.add('hidden');
+      isPlaying = false;
+
+      renderLeaderboardView();
+      document.getElementById('screen-leaderboard').classList.remove('hidden');
+    }
+
+    function renderLeaderboardView() {
+      const lb = getLeaderboard().sort((a, b) => b.score - a.score);
+      const tbody = document.getElementById('leaderboard-tbody');
+      tbody.innerHTML = '';
+
+      if (lb.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada siswa yang tercatat.</td></tr>';
+        return;
+      }
+
+      lb.forEach((item, idx) => {
+        const rank = idx + 1;
+        let rankBadge = `#${rank}`;
+        if (rank === 1) rankBadge = '🥇 1';
+        if (rank === 2) rankBadge = '🥈 2';
+        if (rank === 3) rankBadge = '🥉 3';
+
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-900/80';
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-center font-bold text-amber-400">${rankBadge}</td>
+          <td class="py-3 px-4 font-bold text-white">${item.name} <span class="text-[10px] text-slate-400 block">${item.time}</span></td>
+          <td class="py-3 px-4 text-center">${item.correct ? '<span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">✓ Benar</span>' : '<span class="text-xs bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">✗ Keliru</span>'}</td>
+          <td class="py-3 px-4 text-center font-semibold text-slate-300">${item.distance}m</td>
+          <td class="py-3 px-4 text-center font-semibold text-amber-400">${item.coins} 🪙</td>
+          <td class="py-3 px-4 text-right font-black text-amber-400 text-xl">${item.score}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function backToMenu() {
+      document.getElementById('screen-leaderboard').classList.add('hidden');
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-menu').classList.remove('hidden');
+      document.getElementById('input-student-name').value = '';
+      currentStudent = '';
+    }
+
+    function openLeaderboard() {
+      renderLeaderboardView();
+      document.getElementById('screen-menu').classList.add('hidden');
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-leaderboard').classList.remove('hidden');
+    }
+
+    function confirmClearLeaderboard() {
+      const resp = prompt('Ketik "RESET" untuk menghapus seluruh riwayat nilai siswa kelas:');
+      if (resp && resp.toUpperCase() === 'RESET') {
+        saveLeaderboard([]);
+        renderLeaderboardView();
+        alert('Seluruh riwayat nilai berhasil dihapus.');
+      }
+    }
+
+    function openCheatSheet() {
+      document.getElementById('cheatsheet-modal').classList.remove('hidden');
+    }
+    function closeCheatSheet() {
+      document.getElementById('cheatsheet-modal').classList.add('hidden');
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+      initVirtualKeyboard();
+      requestAnimationFrame(renderGameLoop);
+    });
+  </script>
+</body>
+</html>

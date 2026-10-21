@@ -1,0 +1,6 @@
+{
+  "name": "TabelMaster - Media Pembelajaran Tabel MS Word Kelas 10",
+  "description": "Media pembelajaran interaktif Informatika SMA Kelas 10 tentang cara membuat dan mengatur tabel di Microsoft Word dengan simulasi ribbon, latihan terbimbing, mini-game, dan kuis refleksi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
